@@ -60,26 +60,40 @@ def evaluate(beam_size, test=False):
         checkpoint = jsonread['checkpoint']
         word_map_file = jsonread['word_map_file']  # word map, ensure it's the same the data was encoded with and the model was trained with
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # sets device for model and PyTorch tensors
+        cudnn.benchmark = True  # set to true only if inputs to model are fixed size; otherwise lot of computational overhead   
+    else:
+        try:
+            f = open('../config/eval.json')
+            root = '../'
+        except:
+            f = open('config/eval.json')
+            root = ''
+        jsonread = json.load(f) 
+        # Parameters
+        data_folder = root+jsonread['data_folder']  # folder with data files saved by create_input_files.py
+        data_name = jsonread['data_name']  # base name shared by data files
+        checkpoint = root+jsonread['checkpoint']
+        word_map_file = root+jsonread['word_map_file']
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # sets device for model and PyTorch tensors
         cudnn.benchmark = True  # set to true only if inputs to model are fixed size; otherwise lot of computational overhead
+    # Load model
+    checkpoint = torch.load(checkpoint)
+    decoder = checkpoint['decoder']
+    decoder = decoder.to(device)
+    decoder.eval()
+    encoder = checkpoint['encoder']
+    encoder = encoder.to(device)
+    encoder.eval()
 
-        # Load model
-        checkpoint = torch.load(checkpoint)
-        decoder = checkpoint['decoder']
-        decoder = decoder.to(device)
-        decoder.eval()
-        encoder = checkpoint['encoder']
-        encoder = encoder.to(device)
-        encoder.eval()
+    # Load word map (word2ix)
+    with open(word_map_file, 'r') as j:
+        word_map = json.load(j)
+    rev_word_map = {v: k for k, v in word_map.items()}
+    vocab_size = len(word_map)
 
-        # Load word map (word2ix)
-        with open(word_map_file, 'r') as j:
-            word_map = json.load(j)
-        rev_word_map = {v: k for k, v in word_map.items()}
-        vocab_size = len(word_map)
-
-        # Normalization transform
-        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                         std=[0.229, 0.224, 0.225])
+    # Normalization transform
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
 
             # DataLoader changed num workers to 0
     loader = torch.utils.data.DataLoader(
@@ -211,11 +225,18 @@ def evaluate(beam_size, test=False):
         assert len(references) == len(hypotheses)
 
     # Calculate BLEU-4 scores
-    bleu4 = corpus_bleu(references, hypotheses)
+    bleu1 = corpus_bleu(references, hypotheses, weights=(1,0,0,0))
+    bleu2 = corpus_bleu(references, hypotheses, weights=(.5,.5,0,0))
+    bleu3 = corpus_bleu(references, hypotheses, weights=(.33,.33,.33,0))
+    bleu4 = corpus_bleu(references, hypotheses, weights=(.25,.25,.25,.25))
 
-    return bleu4
+    return (bleu1, bleu2, bleu3, bleu4)
 
 
 if __name__ == '__main__':
     beam_size = jsonread['beam_size']
-    print("\nBLEU-4 score @ beam size of %d is %.4f." % (beam_size, evaluate(beam_size)))
+    bleu_scores = evaluate(beam_size)
+    print("\nBLEU-1 score @ beam size of %d is %.4f." % (beam_size, bleu_scores[0]))
+    print("\nBLEU-2 score @ beam size of %d is %.4f." % (beam_size, bleu_scores[1]))
+    print("\nBLEU-3 score @ beam size of %d is %.4f." % (beam_size, bleu_scores[2]))
+    print("\nBLEU-4 score @ beam size of %d is %.4f." % (beam_size, bleu_scores[3]))

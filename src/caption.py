@@ -192,9 +192,10 @@ def visualize_att(image_path, seq, alphas, rev_word_map, smooth=True):
             plt.imshow(alpha, alpha=0.8)
         plt.set_cmap(cm.Greys_r)
         plt.axis('off')
-    plt.show()
     #save image here
     plt.savefig('attention.jpg')
+    plt.show()
+    
 
 
 if __name__ == '__main__':

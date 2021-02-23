@@ -2,6 +2,7 @@ import time
 import json
 import sys
 sys.path.append('src')
+import numpy as np
 import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
@@ -62,6 +63,18 @@ def main(test=False):
         data_name = jsonread['data_name']
         checkpoint = jsonread['checkpoint']
         epochs = 1
+    else:
+        try:
+            f = open('../config/train.json')
+            root = '../'
+        except:
+            f = open('config/train.json')
+            root = ''
+        jsonread = json.load(f) 
+        # Data parameters
+        data_folder = root+jsonread['data_folder']  # folder with data files saved by create_input_files.py
+        data_name = jsonread['data_name']  # base name shared by data files
+        epochs = 50
     
     # Read word map
     word_map_file = os.path.join(data_folder, 'WORDMAP_' + data_name + '.json')
@@ -125,14 +138,20 @@ def main(test=False):
                 adjust_learning_rate(encoder_optimizer, 0.8)
 
         # One epoch's training
-        train(train_loader=train_loader,
+        bleu_scores = train(train_loader=train_loader,
               encoder=encoder,
               decoder=decoder,
               criterion=criterion,
               encoder_optimizer=encoder_optimizer,
               decoder_optimizer=decoder_optimizer,
               epoch=epoch)
-
+        
+        #ADDED
+        print("\nBLEU-1 score is %.4f." % (bleu_scores[0]))
+        print("\nBLEU-2 score is %.4f." % (bleu_scores[1]))
+        print("\nBLEU-3 score is %.4f." % (bleu_scores[2]))
+        print("\nBLEU-4 score is %.4f." % (bleu_scores[3]))
+        
         # One epoch's validation
         recent_bleu4 = validate(val_loader=val_loader,
                                 encoder=encoder,
@@ -176,6 +195,12 @@ def train(train_loader, encoder, decoder, criterion, encoder_optimizer, decoder_
 
     start = time.time()
 
+    #ADDED
+    bleu1 = []
+    bleu2 = []
+    bleu3 = []
+    bleu4 = []
+    
     # Batches
     for i, (imgs, caps, caplens) in enumerate(train_loader):
         data_time.update(time.time() - start)
@@ -188,7 +213,10 @@ def train(train_loader, encoder, decoder, criterion, encoder_optimizer, decoder_
         # Forward prop.
         imgs = encoder(imgs)
         scores, caps_sorted, decode_lengths, alphas, sort_ind = decoder(imgs, caps, caplens)
-
+        
+        #ADDED CODE
+        scores_copy = scores.clone()
+        
         # Since we decoded starting with <start>, the targets are all words after <start>, up to <end>
         targets = caps_sorted[:, 1:]
 
@@ -225,6 +253,34 @@ def train(train_loader, encoder, decoder, criterion, encoder_optimizer, decoder_
         losses.update(loss.item(), sum(decode_lengths))
         top5accs.update(top5, sum(decode_lengths))
         batch_time.update(time.time() - start)
+        
+        #EXTRA CODE FOR CALCULATING BLEU SCORE ON TRAINING (AF)
+        references = list()  # references (true captions) for calculating BLEU-4 score
+        hypotheses = list()  # hypotheses (predictions)
+        
+        caps = caps[sort_ind]  # because images were sorted in the decoder
+#         for j in range(caps.shape[0]):
+        img_caps = caps.tolist()
+        img_captions = list(
+            map(lambda c: [w for w in c if w not in {word_map['<start>'], word_map['<pad>']}],
+                img_caps))  # remove <start> and pads
+        references.append(img_captions)
+
+        _, preds = torch.max(scores_copy, dim=2)
+        preds = preds.tolist()
+        temp_preds = list()
+        for j, p in enumerate(preds):
+            temp_preds.append(preds[j][:decode_lengths[j]])  # remove pads
+        preds = temp_preds
+        hypotheses.extend(preds)
+
+        assert len(references) == len(hypotheses)
+
+        # Calculate BLEU-4 scores
+        bleu1.append(corpus_bleu(references, hypotheses, weights=(1,0,0,0)))
+        bleu2.append(corpus_bleu(references, hypotheses, weights=(0,1,0,0)))
+        bleu3.append(corpus_bleu(references, hypotheses, weights=(0,0,1,0)))
+        bleu4.append(corpus_bleu(references, hypotheses, weights=(0,0,0,1)))
 
         start = time.time()
 
@@ -238,7 +294,7 @@ def train(train_loader, encoder, decoder, criterion, encoder_optimizer, decoder_
                                                                           batch_time=batch_time,
                                                                           data_time=data_time, loss=losses,
                                                                           top5=top5accs))
-
+    return (np.mean(bleu1), np.mean(bleu2), np.mean(bleu3), np.mean(bleu4))
 
 def validate(val_loader, encoder, decoder, criterion):
     """
