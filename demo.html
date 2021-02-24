@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
+<link rel="stylesheet" href="main.css">
+<body onload="myInit()">
+
+<div class="w3-card-4">
+<div class="w3-container w3-theme w3-card" style="text-align:center">
+  <h1><strong>Using Attention Maps and Counterfactuals to Explain Caption Generation Models</strong></h1>
+</div>
+<br> <br> <br>
+<div style="text-align:center;">  
+  <button id="home" type="button" onclick="location.href='index.html'">ANALYSIS</button>
+  <button id="demo" type="button" onclick="location.href='demo.html'">DEMO</button>
+</div>  
+
+<div class="w3-container w3-text-theme" style="text-align:center;">
+  <h2 >Demo</h2>
+</div>
+<canvas id="myCanvas"></canvas>     <!-- gets re-positioned in myInit(); -->
+<img id="demoImg" src="http://images.cocodataset.org/val2014/COCO_val2014_000000316617.jpg" usemap="#demoMap"/>
+<map id="demoMap" name="demoMap">
+  <area class="manBrownT" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="206.85, 248.57, 210.1, 270.1, 211.67, 272.45, 209.32, 278.32, 207.75, 283.8, 206.19, 289.67, 205.01, 296.32, 204.23, 305.33, 203.06, 311.2, 202.66, 316.28, 204.23, 319.02, 202.16, 325.75, 202.16, 330.63, 205.26, 333.29, 211.02, 334.17, 215.9, 330.18, 214.57, 318.65, 216.34, 315.11, 216.34, 308.01, 220.34, 303.13, 220.78, 293.38, 222.55, 285.4, 225.21, 277.42, 226.99, 269.43, 228.76, 280.52, 228.76, 284.51, 226.54, 290.72, 226.54, 299.59, 226.1, 308.9, 223.88, 315.11, 224.77, 319.98, 228.76, 323.09, 240.29, 325.3, 246.94, 324.42, 243.84, 319.54, 238.96, 316.88, 237.18, 314.22, 238.51, 307.57, 240.29, 300.03, 240.73, 288.94, 243.84, 281.41, 245.17, 275.64, 245.61, 266.33, 246.94, 254.36, 246.94, 245.49, 246.05, 242.83, 241.23, 245.04, 233.4, 242.69, 228.7, 237.99, 228.7, 233.29, 228.31, 229.38, 226.35, 229.38, 222.83, 232.9, 219.31, 235.25, 218.13, 237.6, 212.65, 241.91, 208.35, 245.43, 206.39, 248.17"/>
+  <area class="manBrownT" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="225.77, 166.05, 229.27, 170.35, 230.35, 175.2, 230.62, 180.58, 230.62, 186.78, 230.62, 193.24, 230.89, 198.08, 231.43, 206.43, 231.43, 213.16, 231.16, 216.39, 234.66, 220.69, 234.39, 222.85, 236.27, 224.73, 238.43, 227.42, 239.23, 228.23, 237.62, 229.58, 235.2, 227.15, 233.04, 225.27, 231.43, 224.73, 229.81, 226.35, 227.93, 228.77, 225.24, 226.08, 221.74, 223.39, 220.66, 220.96, 217.7, 218.27, 215.55, 216.93, 209.35, 210.46, 203.16, 205.62, 199.93, 199.97, 199.93, 194.58, 201.28, 189.74, 203.7, 185.16, 207.74, 178.16, 211.78, 173.05, 215.01, 169.28, 219.04, 167.93, 225.77, 166.86"/>
+  <area class="manBrownT" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="229.18, 165.09, 232.14, 164.55, 234.83, 162.94, 235.64, 159.44, 235.91, 155.94, 237.25, 148.67, 239.68, 145.17, 243.45, 142.75, 247.48, 141.67, 250.71, 141.67, 256.37, 143.82, 260.4, 145.44, 262.56, 151.9, 262.02, 155.94, 261.21, 160.24, 261.48, 162.94, 260.14, 164.82, 259.33, 166.7, 258.25, 169.93, 257.17, 175.32, 261.21, 180.97, 264.71, 189.59, 264.98, 200.35, 264.44, 213.27, 260.67, 217.31, 253.14, 222.97, 249.64, 227.54, 243.18, 229.69, 237.52, 228.89, 239.68, 224.58, 241.02, 222.43, 244.52, 218.39, 250.18, 217.85, 254.21, 213.81, 258.25, 210.58, 256.37, 206.01, 255.83, 201.43, 253.41, 200.08, 250.98, 203.58, 248.56, 208.16, 246.95, 214.35, 246.14, 217.31, 242.64, 219.2, 241.29, 221.08, 236.18, 221.08, 233.75, 216.24, 233.75, 208.43, 233.49, 196.32, 233.75, 185.28, 233.22, 176.39, 231.33, 169.13, 228.91, 165.09"/>
+  <area class="woman" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="79.74, 339.72, 89.69, 302.1, 92.46, 282.74, 97.99, 267.25, 99.65, 246.22, 87.48, 267.8, 84.72, 269.46, 79.18, 268.91, 79.18, 256.18, 100.21, 227.41, 82.5, 236.27, 70.88, 240.69, 70.33, 233.5, 74.76, 229.07, 92.46, 222.99, 86.38, 213.58, 89.14, 190.35, 92.46, 183.71, 86.38, 168.77, 90.25, 149.96, 98.55, 146.64, 112.93, 149.96, 118.46, 157.15, 117.91, 175.96, 131.19, 189.79, 133.4, 200.3, 133.4, 222.43, 145.02, 251.76, 145.57, 268.35, 153.32, 298.78, 172.13, 322.57, 183.19, 346.91, 179.32, 355.77, 159.4, 355.77, 163.28, 344.7, 150.0, 320.91, 134.51, 302.1, 130.08, 292.7, 122.34, 274.44, 114.59, 283.84, 101.31, 333.64, 97.99, 356.32, 88.04, 360.19, 75.31, 353.55, 68.67, 348.57, 67.57, 339.17, 75.86, 340.28"/>
+  <area class="tanFrisbee" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="239.55, 221.6, 237.53, 222.0, 235.91, 222.27, 234.97, 222.81, 237.8, 226.31, 239.15, 226.31, 239.96, 225.24, 241.3, 224.97, 240.36, 223.89, 239.82, 222.94, 239.82, 221.73"/>
+  <area class="tanFrisbee" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="232.13, 224.83, 230.65, 226.58, 229.71, 229.42, 228.49, 232.92, 228.76, 236.16, 229.44, 239.26, 231.46, 241.69, 234.83, 243.98, 236.85, 244.79, 239.96, 244.92, 242.79, 244.11, 245.62, 242.63, 247.51, 241.28, 248.99, 239.53, 250.2, 237.1, 251.15, 235.08, 251.15, 232.92, 250.88, 230.63, 250.61, 228.74, 250.07, 227.66, 248.04, 228.88, 246.16, 230.36, 244.13, 231.84, 242.65, 231.98, 241.3, 230.76, 240.36, 230.76, 239.15, 230.22, 238.74, 229.42, 237.12, 229.15, 235.64, 227.93, 233.48, 226.04"/>
+  <area class="redFrisbee" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="418.18, 262.39, 416.54, 268.09, 418.09, 275.25, 420.02, 278.63, 424.85, 280.66, 429.11, 277.66, 432.39, 271.28, 433.26, 266.26, 431.43, 259.49, 429.88, 256.78, 427.27, 255.72, 427.08, 259.59, 425.34, 262.87, 422.73, 264.03, 420.41, 264.13"/>
+  <area class="navyBag" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="198.79, 200.37, 176.23, 215.52, 200.81, 249.52, 205.18, 249.52, 227.06, 229.32, 220.33, 222.25, 216.97, 217.54, 207.88, 209.12, 202.49, 205.08"/>
+  <area class="navyBag" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="227.06, 165.7, 232.11, 180.17, 233.2, 217.95, 235.37, 220.11, 233.2, 169.93, 231.65, 165.91, 228.25, 164.36"/>
+  <area class="clock" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="33.35, 170.33, 30.83, 167.53, 29.15, 164.46, 28.59, 160.54, 28.87, 154.95, 30.27, 151.59, 33.35, 149.63, 34.75, 148.51, 39.5, 146.84, 43.14, 147.68, 47.05, 151.31, 50.13, 153.55, 51.81, 156.63, 53.21, 161.94, 52.93, 164.74, 50.69, 168.65, 50.13, 169.49, 35.31, 172.01"/>
+  <area class="manRedT" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="390.0, 211.69, 413.01, 214.64, 420.67, 218.77, 424.8, 227.02, 427.16, 243.54, 433.65, 263.59, 444.26, 288.36, 463.13, 311.95, 469.03, 318.43, 467.85, 339.67, 456.06, 337.9, 453.7, 330.23, 450.16, 322.56, 421.26, 291.31, 404.75, 278.92, 395.9, 286.0, 388.83, 293.67, 383.52, 313.13, 388.24, 324.33, 381.16, 330.82, 369.36, 339.67, 361.7, 334.36, 371.72, 316.67, 365.83, 286.0, 368.77, 277.74, 379.98, 258.28, 369.36, 247.66, 365.24, 263.59, 362.88, 270.08, 358.75, 272.43, 353.44, 271.25, 339.88, 257.1, 336.34, 250.61, 341.65, 243.54, 347.54, 250.02, 350.49, 258.28, 353.44, 240.0, 356.39, 232.92, 353.44, 221.72, 348.72, 213.46, 349.31, 204.02, 357.57, 200.48, 362.88, 199.31, 369.95, 206.97, 372.9, 209.92, 385.88, 210.51, 388.83, 210.51"/>
+  <area class="yellowFrisbee" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="46.55, 260.69, 53.35, 264.27, 65.17, 264.99, 71.25, 263.55, 73.04, 261.41, 73.4, 259.62, 69.82, 256.75, 59.44, 255.32, 51.2, 255.32, 47.27, 258.9"/>
+  <area class="whiteFrisbee" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="81.8, 266.81, 81.24, 275.2, 86.55, 288.34, 90.19, 291.98, 93.54, 291.7, 95.22, 288.34, 94.94, 279.67, 91.86, 270.44, 87.39, 262.33, 87.11, 269.04, 87.39, 269.6"/>
+  <area class="redFrisbee" shape="poly" onmouseover="myHover(this);" onmouseout="myLeave();" onclick="myClick(this);" coords="418.18, 262.39, 416.54, 268.09, 418.09, 275.25, 420.02, 278.63, 424.85, 280.66, 429.11, 277.66, 432.39, 271.28, 433.26, 266.26, 431.43, 259.49, 429.88, 256.78, 427.27, 255.72, 427.08, 259.59, 425.34, 262.87, 422.73, 264.03, 420.41, 264.13"/>
+</map>
+<div class="w3-container w3-text-theme" style="text-align:center;">  
+  <p><b>Three friends are playing frisbee golf in the woods.</b></p>
+  <p><b>A couple of men are standing in the woods.</b></p>
+  <p><b>Three people holding frisbees in a wooded area.</b></p>
+  <p><b>Two young men and a girl holding Frisbees in the woods.</b></p>
+  <p><b>A group of people in a wooded area with leaves on the ground playing frisbee golf.</b></p>
+</div> 
+<div style="text-align:center;">  
+  <button id="highlight" type="button" onclick="myHighlight();">HIGHLIGHT ALL OBJECTS</button>
+</div>
+
+<div style="text-align:center;">  
+    <button id="run-model" type="button" onclick="runModel();">RUN MODEL</button>
+    <button id="clear" type="button" onclick="myClear();">CLEAR</button>
+</div> 
+
+<table class="w3-container w3-text-theme" style="text-align:center;">
+  <tr>
+    <th><h2>Counterfactual</h2></th>
+    <th><h2>Attention Map</h2></th>
+  </tr>
+  <tr>
+    <td><img id="counter"></img></td>
+    <td><img id="att"></img></td>
+  </tr>
+</table>
+
+</div>
+<br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> 
+
+</body>
+<script src="main.js"></script> 
+</html>
