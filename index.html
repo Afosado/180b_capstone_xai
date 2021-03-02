@@ -21,28 +21,59 @@
   <br>
     <h2 id="intro">Introduction</h2>
 </div>
-<p> Intro text here </p>
-<br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
+<p> Image captioning is an interesting area to investigate because it is a 
+  combination of object detection and natural language processing, 
+  which corresponds to the application of convolutional neural network (CNN) 
+  and recurrent neural network (RNN). A good image captioning model mimics the 
+  action of a human that it is able to understand and describe what an image includes. 
+  In image captioning area, attention map is a widely used technique. With attention map, 
+  the model knows which part in the image it needs to pay more attention to when generating 
+  the next word in the caption. In our project, we also implemented 
+  this attention map technique.  At the same time, it is important 
+  that an image captioning model is robust, which means it could make reasonable 
+  adjustments to the caption it generates when the input image is changed. 
+  In our project, we also implemented an image perturbation model that alters 
+  the input image to evaluate the robustness of our image captioning model.</p>
+
+<br> <br> <br>
 <div class="w3-container w3-text-theme">
   <h2 id="problem">The Problem</h2>
 </div>
-<p> Problem Description here </p>
-<br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
+
+
+<p>Image captioning models are complex because they work on object detection as well as caption generation. When these models fail it is hard to understand where and why they fail. To explain how an image captioning model works, 
+  we use attention maps to visualize the relationships between generated words and objects in an image.</p>
+<br> <br> <br>
+
+
 <div class="w3-container w3-text-theme">
   <h2 id="data">Data Description</h2>
 </div>
-<p>Data Description here </p>
-<br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
+<p>At the very beginning, we wanted to train the image captioning model with the combination of the COCO dataset and the Visual Genome dataset. After we realized it is hard to combine them, we decided to only use the COCO dataset to train this model. The reason why we use the COCO dataset in the end is that COCO is large and comprehensive enough to train our model. It contains 330k images and 5 captions per image. We use the CelebA (CelebFaces Attributes Dataset) dataset to train our image perturbation model. CelebA is a large-scale face attributes dataset with more than 200K celebrity images, 
+  each with 40 attribute annotations. The images in this dataset cover large pose variations and background clutter.</p>
+<br> <br>  <br>
+
+
 <div class="w3-container w3-text-theme">
   <h2 id="data">Attention Maps</h2>
 </div>
-<p>Attention map analysis </p>
-<br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
+<p>With attention maps, we could visualize how our image captioning model generate that specific
+  caption based on objects in an image. Let's take a look at an example of attention maps.</p>
+<br><br>
+<p>
+  The generated caption is: <b>a small dog sitting on top of a toilet </b> 
+</p>
+<img id="demoImg" src="attentionmap_example.png" />
+<br> <br><br>
+
+
 <div class="w3-container w3-text-theme">
   <h2 id="data">Counterfactuals</h2>
 </div>
-<p>Counterfactual analysis </p>
-<br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
+<p>However, a generated caption can be significantly influenced by conterfactuals. Let's take a look at an example </p>
+<br><br>
+<img id="demoImg" src="counter.png" />
+<br> <br><br>
 <div class="w3-container w3-text-theme">
   <h2 id="data">Conclusion</h2>
 </div>
