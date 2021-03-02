@@ -3,39 +3,24 @@ let ctx;
 let clicked = false;
 let classClicked;
 let classToColor = {
-    manBrownT: 'brown',
-    woman: 'purple',
-    tanFrisbee: 'tan',
-    redFrisbee: 'red',
-    navyBag: 'blue',
-    clock: 'teal',
-    manRedT: 'green',
-    yellowFrisbee: 'yellow',
-    whiteFrisbee: 'orange',
+    man: 'blue',
+    car: 'purple',
+    dog: 'gray',
+    skateboard: 'red',
 };
 
 let classToAtt = {
-    manBrownT: 'img/att/1.png',
-    woman: 'img/att/2.png',
-    tanFrisbee: 'img/att/3.png',
-    redFrisbee: 'img/att/4.png',
-    navyBag: 'img/att/5.png',
-    clock: 'img/att/6.png',
-    manRedT: 'img/att/7.png',
-    yellowFrisbee: 'img/att/8.png',
-    whiteFrisbee: 'img/att/9.png',
+    man: 'img/att/man.png',
+    car: 'img/att/car.png',
+    dog: 'img/att/dog.png',
+    skateboard: 'img/att/skateboard.png',
 };
 
 let classToCounter = {
-    manBrownT: 'img/counter/1.png',
-    woman: 'img/counter/2.png',
-    tanFrisbee: 'img/counter/3.png',
-    redFrisbee: 'img/counter/4.png',
-    navyBag: 'img/counter/5.png',
-    clock: 'img/counter/6.png',
-    manRedT: 'img/counter/7.png',
-    yellowFrisbee: 'img/counter/8.png',
-    whiteFrisbee: 'img/counter/9.png',
+    man: 'img/counter/man.png',
+    car: 'img/counter/car.png',
+    dog: 'img/counter/dog.png',
+    skateboard: 'img/counter/skateboard.png',
 };
 
 // shorthand func
