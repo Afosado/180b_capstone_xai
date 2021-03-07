@@ -10,12 +10,12 @@ import torch.nn.functional as F
 from tqdm import tqdm
 root = None
 try:
-    f = open('../config/eval_test.json')
+    f = open('../config/eval.json')
     root = '../'
 except:
-    f = open('config/eval_test.json')
+    f = open('config/eval.json')
     root = ''
-jsonread = json.load(f)
+jsonread = json.load(f) 
 # Parameters
 data_folder = root+jsonread['data_folder']  # folder with data files saved by create_input_files.py
 data_name = jsonread['data_name']  # base name shared by data files
@@ -25,35 +25,34 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # sets de
 cudnn.benchmark = True  # set to true only if inputs to model are fixed size; otherwise lot of computational overhead
 
 # Load model
-checkpoint = torch.load(checkpoint)
-decoder = checkpoint['decoder']
-decoder = decoder.to(device)
-decoder.eval()
-encoder = checkpoint['encoder']
-encoder = encoder.to(device)
-encoder.eval()
+# checkpoint = torch.load(checkpoint)
+# decoder = checkpoint['decoder']
+# decoder = decoder.to(device)
+# decoder.eval()
+# encoder = checkpoint['encoder']
+# encoder = encoder.to(device)
+# encoder.eval()
 
 # Load word map (word2ix)
-with open(word_map_file, 'r') as j:
-    word_map = json.load(j)
-rev_word_map = {v: k for k, v in word_map.items()}
-vocab_size = len(word_map)
+# with open(word_map_file, 'r') as j:
+#     word_map = json.load(j)
+# rev_word_map = {v: k for k, v in word_map.items()}
+# vocab_size = len(word_map)
 
 # Normalization transform
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 
 
-def evaluate(beam_size, test=True):
+def evaluate(beam_size, test=False):
     """
     Evaluation
-
     :param beam_size: beam size at which to generate captions for evaluation
     :return: BLEU-4 score
     """
     if test:
-        f = open('../config/eval_test.json')
-        jsonread = json.load(f)
+        f = open('config/eval_test.json')
+        jsonread = json.load(f) 
         # Parameters
         data_folder = jsonread['data_folder']  # folder with data files saved by create_input_files.py
         data_name = jsonread['data_name']  # base name shared by data files
@@ -61,12 +60,9 @@ def evaluate(beam_size, test=True):
         word_map_file = jsonread['word_map_file']  # word map, ensure it's the same the data was encoded with and the model was trained with
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # sets device for model and PyTorch tensors
         cudnn.benchmark = True  # set to true only if inputs to model are fixed size; otherwise lot of computational overhead
-        try:
-            # Load model
-            checkpoint = torch.load(checkpoint)
-        except FileNotFoundError:
-            print('file not found...')
-            checkpoint = torch.load('../'+checkpoint)
+
+        # Load model
+        checkpoint = torch.load(checkpoint)
         decoder = checkpoint['decoder']
         decoder = decoder.to(device)
         decoder.eval()
@@ -75,7 +71,7 @@ def evaluate(beam_size, test=True):
         encoder.eval()
 
         # Load word map (word2ix)
-        with open('../'+word_map_file, 'r') as j:
+        with open(word_map_file, 'r') as j:
             word_map = json.load(j)
         rev_word_map = {v: k for k, v in word_map.items()}
         vocab_size = len(word_map)
@@ -84,12 +80,12 @@ def evaluate(beam_size, test=True):
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
 
-            # DataLoader
+            # DataLoader changed num workers to 0
     loader = torch.utils.data.DataLoader(
         CaptionDataset(data_folder, data_name, 'TEST', transform=transforms.Compose([normalize])),
-        batch_size=1, shuffle=True, num_workers=1, pin_memory=True)
+        batch_size=1, shuffle=True, pin_memory=True)
 
-    # TODO: Batched Beam Searchcheckpoint
+    # TODO: Batched Beam Search
     # Therefore, do not use a batch_size greater than 1 - IMPORTANT!
 
     # Lists to store references (true captions), and hypothesis (prediction) for each image
@@ -151,7 +147,7 @@ def evaluate(beam_size, test=True):
             scores = decoder.fc(h)  # (s, vocab_size)
             scores = F.log_softmax(scores, dim=1)
 
-            # Addcheckpoint
+            # Add
             scores = top_k_scores.expand_as(scores) + scores  # (s, vocab_size)
 
             # For the first step, all k points will have the same scores (since same k previous words, h, c)
@@ -162,7 +158,7 @@ def evaluate(beam_size, test=True):
                 top_k_scores, top_k_words = scores.view(-1).topk(k, 0, True, True)  # (s)
 
             # Convert unrolled indices to actual indices of scores
-            prev_word_inds = top_k_words // vocab_size  # (s)
+            prev_word_inds = top_k_words / vocab_size  # (s)
             next_word_inds = top_k_words % vocab_size  # (s)
 
             # Add new words to sequences
@@ -193,9 +189,13 @@ def evaluate(beam_size, test=True):
             if step > 50:
                 break
             step += 1
-
-        i = complete_seqs_scores.index(max(complete_seqs_scores))
-        seq = complete_seqs[i]
+        
+        #for test data
+        if not complete_seqs_scores:
+            seq = []
+        else:
+            i = complete_seqs_scores.index(max(complete_seqs_scores))
+            seq = complete_seqs[i]
 
         # References
         img_caps = allcaps[0].tolist()
