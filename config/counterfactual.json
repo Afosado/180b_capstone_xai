@@ -9,6 +9,6 @@
   "wordmap_id":"1QW4DTL9cktUipLynfKfqbi46Jod5ao87",
   "model_fp":"models/BEST_checkpoint_coco_5_cap_per_img_5_min_word_freq.pth.tar",
   "wordmap_fp":"models/WORDMAP_coco_5_cap_per_img_5_min_word_freq.json",
-  "beam_size":5,
+  "beam_size":1,
   "smooth": true
 }

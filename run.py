@@ -1,10 +1,10 @@
 import json
 import sys
-# import torch
-# from src.utils import create_input_files
-# from src.train import main
-# from src.eval import evaluate
-# from src.caption import caption_image_beam_search, visualize_att
+import torch
+from src.utils import create_input_files
+from src.train import main
+from src.eval import evaluate
+from src.caption import caption_image_beam_search, visualize_att
 from src.counterfactuals import create_mask_input, generate_counterfactuals
 from src.img_caption_explainer import ImageCaptionExplainer
 
@@ -116,23 +116,23 @@ def all():
     train()
     evaluate_model()
     generate_viz()
+    counterfactual_production()
+    explain_model()
 
 def coco2014():
     counterfactual_production(year='2014')
 
 def test():
-    # data(True)
-    # train(True)
-    # evaluate_model(True)
-    counterfactual_production(test=True)
+#     data(True)
+#     train(True)
+#     evaluate_model(True)
+#     generate_viz(True)
+#     counterfactual_production(test=True)
     explain_model(test=True)
-    # generate_viz(True)
+    
 
 if __name__ == '__main__':
-    # try:
-    globals()[sys.argv[1]]()
-    # except IndexError:
-    #     data()
-    #     train()
-    #     evaluate_model()
-    #     generate_viz()
+    try:
+        globals()[sys.argv[1]]()
+    except:
+        all()

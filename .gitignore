@@ -137,3 +137,5 @@ test/testdata/out_images/*
 test/models/*
 !test/models/models.txt
 !test/testdata/out_images/out_images.txt
+test/full_model_coco2017_v2/*
+test/full_model_coco2017_v2.zip

@@ -53,18 +53,20 @@ def download_gen_inpaint_model(file_id, model_dir):
 
 def create_mask_input(data_dir, temp_dir, out_dir, annotation_fp, input=False):
     # dir_creator(temp_dir)
-    print(os.getcwd())
+#     print(os.getcwd())
     coco = COCO(annotation_fp)
     for i in tqdm(range(len(os.listdir(data_dir)))):
         img_id = os.listdir(data_dir)[i]
+        if img_id == '.ipynb_checkpoints':
+            continue
         img_id = int(img_id.strip('.jpg').split('_')[-1])
     #     print(img_id)
         fname = coco.loadImgs(img_id)[0]['file_name']
     #     print(fname)
     #     time.sleep(100)
         ann_ids = coco.getAnnIds(img_id)
-        print(fname)
-        print(ann_ids)
+#         print(fname)
+#         print(ann_ids)
     #     ann_id = ann_ids[get_random_idx(ann_ids)]
         for ann_id in ann_ids:
             ann = coco.loadAnns(ann_id)[0]
@@ -88,21 +90,21 @@ def create_mask_input(data_dir, temp_dir, out_dir, annotation_fp, input=False):
             #    #    #    os.mkdir(dir
             dir_creator(f'{temp_dir}/{img_dir}')
             # os.mkdir(f'{out_dir}/{img_dir}')
-            print(f'{temp_dir}/{img_dir} directory created')
+#             print(f'{temp_dir}/{img_dir} directory created')
 
-            print('current directory:',os.getcwd())
+#             print('current directory:',os.getcwd())
 
             mask = Image.fromarray(mask)
             mask_fname = f'{temp_dir}/{img_id}/mask_{ann_id}.png'
-            print(os.getcwd())
+#             print(os.getcwd())
             mask.save(mask_fname)
-            print(f'{mask_fname} saved')
+#             print(f'{mask_fname} saved')
 
 
             img = Image.open(f'{data_dir}/{fname}')
             raw_fname = f'{temp_dir}/{img_id}/raw_{img_id}.png'
             img.save(raw_fname)
-            print(f'{raw_fname} saved')
+#             print(f'{raw_fname} saved')
             if input == True:
                 raw_cv = cv2.imread(f'{temp_dir}/{img_id}/raw_{img_id}.png')
                 raw_cv = cv2.cvtColor(raw_cv, cv2.COLOR_BGR2RGB)
@@ -112,14 +114,14 @@ def create_mask_input(data_dir, temp_dir, out_dir, annotation_fp, input=False):
                 input_cv = Image.fromarray(input_cv)
                 input_fname = f'{temp_dir}/{img_id}/input_{ann_id}.png'
                 input_cv.save(input_fname)
-                print(f'{input_fname} saved\n')
+#                 print(f'{input_fname} saved\n')
         #     os.chdir('..')
 
 
 def generate_counterfactual(image_fp, mask_fp, output_fp, checkpoint_dir, model_id=None):
     try:FLAGS = ng.Config('config/inpaint.yml')
     except AssertionError:
-        print(os.getcwd())
+#         print(os.getcwd())
         raise ValueError('check directory above')
     # ng.get_gpus(1)
     # args, unknown = parser.parse_known_args()
@@ -135,7 +137,7 @@ def generate_counterfactual(image_fp, mask_fp, output_fp, checkpoint_dir, model_
     grid = 8
     image = image[:h//grid*grid, :w//grid*grid, :]
     mask = mask[:h//grid*grid, :w//grid*grid, :]
-    print('Shape of image: {}'.format(image.shape))
+#     print('Shape of image: {}'.format(image.shape))
 
     image = np.expand_dims(image, 0)
     mask = np.expand_dims(mask, 0)
