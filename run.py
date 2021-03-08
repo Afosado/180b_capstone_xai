@@ -128,7 +128,7 @@ def test():
     evaluate_model(True)
     generate_viz(True)
     counterfactual_production(test=True)
-    explain_model(test=True)
+#     explain_model(test=True)
     
 
 if __name__ == '__main__':

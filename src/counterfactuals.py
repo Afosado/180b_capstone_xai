@@ -57,6 +57,8 @@ def create_mask_input(data_dir, temp_dir, out_dir, annotation_fp, input=False):
     coco = COCO(annotation_fp)
     for i in tqdm(range(len(os.listdir(data_dir)))):
         img_id = os.listdir(data_dir)[i]
+        if img_id == '.ipynb_checkpoints':
+            continue
         img_id = int(img_id.strip('.jpg').split('_')[-1])
     #     print(img_id)
         fname = coco.loadImgs(img_id)[0]['file_name']
