@@ -26,14 +26,17 @@
   which corresponds to the application of convolutional neural network (CNN) 
   and recurrent neural network (RNN). A good image captioning model mimics the 
   action of a human that it is able to understand and describe what an image includes. 
-  In image captioning area, attention map is a widely used technique. With attention map, 
-  the model knows which part in the image it needs to pay more attention to when generating 
-  the next word in the caption. In our project, we also implemented 
-  this attention map technique.  At the same time, it is important 
+  In image captioning area, attention maps are a widely used technique. With attention maps, 
+  we can see which parts in the image the model pays attention to when generating 
+  each word in a caption. In our project, we implemented 
+  this attention map technique. At the same time, it is important 
   that an image captioning model is robust, which means it could make reasonable 
   adjustments to the caption it generates when the input image is changed. 
-  In our project, we also implemented an image perturbation model that alters 
-  the input image to evaluate the robustness of our image captioning model.</p>
+  In our project, we implemented an image perturbation model that alters 
+  the input image to evaluate how the captions generated change when an object from the original
+  image is removed. This allowed us to test the robustness of our image captioning model while 
+  also helping us generate object importance maps which determine which object are most important in the 
+  caption generation process.</p>
 
 <br> <br> <br>
 <div class="w3-container w3-text-theme">
@@ -45,14 +48,17 @@
   To explain how an image captioning model works, we use attention maps to visualize 
   the relationships between generated words and objects in an image. At the same time, it is also challenging to know how a caption will change if
   certain object in an image is changed. In this case, we implemented our image pertubation model and calculated the sentence distance between
-  raw caption and changed caption</p>
+  the original caption and the changed caption (which was generated from the original image with an object removed) to determine the importance of the object removed.</p>
 <br> <br> <br>
 
 
 <div class="w3-container w3-text-theme">
   <h2 id="data">Data Description</h2>
 </div>
-<p>At the very beginning, we wanted to train the image captioning model with the combination of the COCO dataset and the Visual Genome dataset. After we realized it is hard to combine them, we decided to only use the COCO dataset to train this model. The reason why we use the COCO dataset in the end is that COCO is large and comprehensive enough to train our model. It contains 330k images and 5 captions per image. We use the CelebA (CelebFaces Attributes Dataset) dataset to train our image perturbation model. CelebA is a large-scale face attributes dataset with more than 200K celebrity images, 
+<p>At the very beginning, we wanted to train the image captioning model with the combination of the COCO dataset and the Visual Genome dataset. 
+  After we realized it is hard to combine them, we decided to only use the COCO dataset to train this model. The reason why we use the COCO dataset 
+  in the end is that COCO is large and comprehensive enough to train our model. It contains 330k images and 5 captions per image. We use the CelebA 
+  (CelebFaces Attributes Dataset) dataset to train our image perturbation model. CelebA is a large-scale face attributes dataset with more than 200K celebrity images, 
   each with 40 attribute annotations. The images in this dataset cover large pose variations and background clutter.</p>
 <br> <br>  <br>
 
@@ -63,18 +69,37 @@
 <p>With attention maps, we could visualize how our image captioning model generate that specific
   caption based on objects in an image. We used deterministic "soft" attention as the research paper Show, Attend, Tell does. This differs from stochastic "hard" attention 
   as during the learning process 
-  we do not sample attention locations each time but can instead take the expectation of a context vector. A benefit of using deterministic attention is that the whole model is smooth and differentiable so we can use standard back-propagation to train the model.
+  we do not sample attention locations each time but can instead take the expectation of a context vector. A benefit of using 
+  deterministic attention is that the whole model is smooth and differentiable so we can use standard back-propagation to train the model.
   Using these attention maps we can see where the model is looking when it outputs a given word and with this 
-  information we can better understand the model especially when it makes mistakes. Let's take a look at an example of attention maps. 
-  In our first example we can see the model captions the image well. Looking at the attention map it is clear the model is looking at the correct sections of the images as when it 
-  generates the word "dog" its attention is on the dog's body and when it generates the word "toilet" its attention is on the toilet.</p>
-<br><br>
+  information we can better understand the model especially when it makes mistakes. Let's take a look at an example of an attention maps:
+</p>
+<p>
+  The original caption is: <b>a brown and white dog posed on top of a toilet </b>
+</p>
 <p>
   The generated caption is: <b>a small dog sitting on top of a toilet </b> 
 </p>
-<img id="demoImg" src="attentionmap_example.png" />
-<br> <br><br>
-
+<img id="demoImg" src="img/analysis/attentionmap_example.png" />
+<p>
+  In our first example we can see the model captions the image well. Looking at the attention map it is clear the model is looking at the correct sections of the images as when it 
+  generates the word "dog" its attention is on the dog's body and when it generates the word "toilet" its attention is on the toilet. Seeing this attention maps allows the user to
+  trust the model's caption generations as the model is looking at intuitive parts of the image to generate each word. Lets look at another example:
+</p>
+<p>
+  The original caption is: <b>a table with some cellphones and other objects</b>
+</p>
+<p>
+  The generated caption is: <b>the contents of a purse on a wooden table </b> 
+</p>
+<img id="demoImg" src="img/analysis/attention1_bad.jpg" />
+<p>
+  Here the model generates a caption that is slightly incorrect. The object are not all things you would keep in a purse such as the coat hook and foil disk. However,
+  the caption is reasonable given the image contains many smaller items that could be contained in a purse. Furthermore, when the phrase "contents of a purse" is generated,
+  we see the model focused on the various objects in the center of the table and when the phrase "wooden table" is generated we see the model is focused on the outer regions of 
+  the image where the table is without obstruction. So while the caption generated incorrect, we can see throught the attention maps that despite the mistake, the model is still
+  looking at the correct and intuitive regions of the image and this help us understand why the model made the mistake it did.
+</p>
 
 <div class="w3-container w3-text-theme">
   <h2 id="data">Counterfactuals</h2>
@@ -88,11 +113,8 @@
   then remove that surfer from the image by inferring what the background image should look like.
 </p>
 <br><br>
-<img id="demoImg" src="counter.png" />
+<img id="demoImg" src="img/analysis/counter.png" />
 <br> <br><br>
-
-
-
 <div class="w3-container w3-text-theme">
   <h2 id="data">Object Importance</h2>
 </div>
@@ -100,14 +122,8 @@
   then compare those vectors using the cosine similarity metric. Let's take a look at an example of our object importance visualization:
 </p>
 <br><br>
-<img id="demoImg" src="object_importance.png" width="600" height="500" />
+<img id="demoImg" src="img/analysis/object_importance.png" width="600" height="500" />
 <br> <br><br>
-
-
-
-
-
-
 <div class="w3-container w3-text-theme">
   <h2 id="data">Conclusion</h2>
 </div>
