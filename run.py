@@ -123,11 +123,11 @@ def coco2014():
     counterfactual_production(year='2014')
 
 def test():
-#     data(True)
-#     train(True)
-#     evaluate_model(True)
-#     generate_viz(True)
-#     counterfactual_production(test=True)
+    data(True)
+    train(True)
+    evaluate_model(True)
+    generate_viz(True)
+    counterfactual_production(test=True)
     explain_model(test=True)
     
 
