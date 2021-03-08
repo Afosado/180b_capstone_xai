@@ -41,8 +41,11 @@
 </div>
 
 
-<p>Image captioning models are complex because they work on object detection as well as caption generation. When these models fail it is hard to understand where and why they fail. To explain how an image captioning model works, 
-  we use attention maps to visualize the relationships between generated words and objects in an image.</p>
+<p>Image captioning models are complex because they work on object detection as well as caption generation. When these models fail it is hard to understand where and why they fail. 
+  To explain how an image captioning model works, we use attention maps to visualize 
+  the relationships between generated words and objects in an image. At the same time, it is also challenging to know how a caption will change if
+  certain object in an image is changed. In this case, we implemented our image pertubation model and calculated the sentence distance between
+  raw caption and changed caption</p>
 <br> <br> <br>
 
 
@@ -58,7 +61,13 @@
   <h2 id="data">Attention Maps</h2>
 </div>
 <p>With attention maps, we could visualize how our image captioning model generate that specific
-  caption based on objects in an image. Let's take a look at an example of attention maps.</p>
+  caption based on objects in an image. We used deterministic "soft" attention as the research paper Show, Attend, Tell does. This differs from stochastic "hard" attention 
+  as during the learning process 
+  we do not sample attention locations each time but can instead take the expectation of a context vector. A benefit of using deterministic attention is that the whole model is smooth and differentiable so we can use standard back-propagation to train the model.
+  Using these attention maps we can see where the model is looking when it outputs a given word and with this 
+  information we can better understand the model especially when it makes mistakes. Let's take a look at an example of attention maps. 
+  In our first example we can see the model captions the image well. Looking at the attention map it is clear the model is looking at the correct sections of the images as when it 
+  generates the word "dog" its attention is on the dog's body and when it generates the word "toilet" its attention is on the toilet.</p>
 <br><br>
 <p>
   The generated caption is: <b>a small dog sitting on top of a toilet </b> 
@@ -70,10 +79,35 @@
 <div class="w3-container w3-text-theme">
   <h2 id="data">Counterfactuals</h2>
 </div>
-<p>However, a generated caption can be significantly influenced by conterfactuals. Let's take a look at an example </p>
+<p>Once we produce the attention maps for a given image and its produced caption, we extend on this idea by 
+  removing an object from the source image and regenerating the produced caption to assess how it differs from the original.  
+  The method we choose to remove objects from an image is called Generative Inpainting. Given an input image and a binary mask, 
+  generative in-painting uses a pre-trained gated convolutional neural network to remove the part of the image in the mask 
+  and replace it with the model’s best guess of what the original image would look like without the masked portion. 
+  For example we can take an image of several surfers riding a wave, draw a white mask image where one of the surfers is located, 
+  then remove that surfer from the image by inferring what the background image should look like.
+</p>
 <br><br>
 <img id="demoImg" src="counter.png" />
 <br> <br><br>
+
+
+
+<div class="w3-container w3-text-theme">
+  <h2 id="data">Object Importance</h2>
+</div>
+<p>In order to determine how important an object is to the overall caption, we compare what the caption looks like with and without that object.  We can make this comparison quantitatively using a pre-trained BERT model that converts sentences into vectors, 
+  then compare those vectors using the cosine similarity metric. Let's take a look at an example of our object importance visualization:
+</p>
+<br><br>
+<img id="demoImg" src="object_importance.png" width="600" height="500" />
+<br> <br><br>
+
+
+
+
+
+
 <div class="w3-container w3-text-theme">
   <h2 id="data">Conclusion</h2>
 </div>
