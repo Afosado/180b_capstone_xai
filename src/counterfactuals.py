@@ -15,30 +15,10 @@ sys.path.insert(0, 'src/')
 from download import *
 from helper import dir_creator
 from inpaint_model import InpaintCAModel
-print(os.getcwd())
 sys.path.insert(0, 'src/data/cocoapi/PythonAPI/')
 from pycocotools.coco import COCO
 
-# def dir_creator(dir_name):
-#     try:
-#         os.chdir(dir_name)
-#         for _ in dir_name.split('/'):
-#             os.chdir('..')
-#     except FileNotFoundError:
-#         if len(dir_name.split('/')) > 1:
-#             tot_dir = ''
-#             for dir in dir_name.split('/'):
-#                 tot_dir += dir
-#                 try:os.mkdir(tot_dir)
-#                 except FileExistsError:pass
-#                 tot_dir += '/'
-#         else:
-#             os.mkdir(dir_name)
-
 def download_gen_inpaint_model(file_id, model_dir):
-    # file_id = '11fD6YYG4kL1WT_a27LSOl5tOZOsg7TOM'
-
-    # dir_creator(model_dir.split('/')[0])
     destination = f'{model_dir}.zip'
     print(f'Downloading file at {destination}...')
     print(file_id)
@@ -47,65 +27,36 @@ def download_gen_inpaint_model(file_id, model_dir):
         os.chdir(model_dir.split('/')[0])
         z.extractall()
         print(f'extracted to {model_dir}.zip')
-        # time.sleep(100)
         os.chdir('..')
 
 
 def create_mask_input(data_dir, temp_dir, out_dir, annotation_fp, input=False):
-    # dir_creator(temp_dir)
-#     print(os.getcwd())
     coco = COCO(annotation_fp)
     for i in tqdm(range(len(os.listdir(data_dir)))):
         img_id = os.listdir(data_dir)[i]
         if img_id == '.ipynb_checkpoints':
             continue
         img_id = int(img_id.strip('.jpg').split('_')[-1])
-    #     print(img_id)
         fname = coco.loadImgs(img_id)[0]['file_name']
-    #     print(fname)
-    #     time.sleep(100)
         ann_ids = coco.getAnnIds(img_id)
-#         print(fname)
-#         print(ann_ids)
-    #     ann_id = ann_ids[get_random_idx(ann_ids)]
+        # get random images from coco, potentially could implement this in future
+        #     ann_id = ann_ids[get_random_idx(ann_ids)]
         for ann_id in ann_ids:
             ann = coco.loadAnns(ann_id)[0]
             mask = coco.annToMask(ann) * 255
 
             img_dir = str(img_id)
-            #try:
-            #    print('current directory:',os.getcwd())
-
-            #    os.chdir(f'{temp_dir}/{img_dir}')
-            #    os.chdir('../../../../')
-            #except FileNotFoundError:
-            #    print('current directory:',os.getcwd())
-            #    #if os.path.exists(f'{temp_dir}')==False: #or os.path.exists(f'{out_dir}')==False:
-            #    #    dir_tot = ''
-            #    #    for dir in f'{temp_dir}'.split('/'):
-            #    #        dir_tot += dir
-            #    #        os.mkdir(dir_tot)
-            #    #        dir_tot += '/'
-            #    #    #for dir in f'{out_dir}'.split('/'):
-            #    #    #    os.mkdir(dir
             dir_creator(f'{temp_dir}/{img_dir}')
-            # os.mkdir(f'{out_dir}/{img_dir}')
-#             print(f'{temp_dir}/{img_dir} directory created')
-
-#             print('current directory:',os.getcwd())
 
             mask = Image.fromarray(mask)
             mask_fname = f'{temp_dir}/{img_id}/mask_{ann_id}.png'
-#             print(os.getcwd())
             mask.save(mask_fname)
 #             print(f'{mask_fname} saved')
-
-
             img = Image.open(f'{data_dir}/{fname}')
             raw_fname = f'{temp_dir}/{img_id}/raw_{img_id}.png'
             img.save(raw_fname)
 #             print(f'{raw_fname} saved')
-            if input == True:
+            if input == True: # we don't need to add raw and mask images to create counterfactual
                 raw_cv = cv2.imread(f'{temp_dir}/{img_id}/raw_{img_id}.png')
                 raw_cv = cv2.cvtColor(raw_cv, cv2.COLOR_BGR2RGB)
                 mask_cv = cv2.imread(mask_fname)
@@ -115,17 +66,14 @@ def create_mask_input(data_dir, temp_dir, out_dir, annotation_fp, input=False):
                 input_fname = f'{temp_dir}/{img_id}/input_{ann_id}.png'
                 input_cv.save(input_fname)
 #                 print(f'{input_fname} saved\n')
-        #     os.chdir('..')
 
 
 def generate_counterfactual(image_fp, mask_fp, output_fp, checkpoint_dir, model_id=None):
     try:FLAGS = ng.Config('config/inpaint.yml')
     except AssertionError:
-#         print(os.getcwd())
         raise ValueError('check directory above')
     # ng.get_gpus(1)
     # args, unknown = parser.parse_known_args()
-
     model = InpaintCAModel()
     image = cv2.imread(image_fp)
     mask = cv2.imread(mask_fp)
@@ -137,7 +85,6 @@ def generate_counterfactual(image_fp, mask_fp, output_fp, checkpoint_dir, model_
     grid = 8
     image = image[:h//grid*grid, :w//grid*grid, :]
     mask = mask[:h//grid*grid, :w//grid*grid, :]
-#     print('Shape of image: {}'.format(image.shape))
 
     image = np.expand_dims(image, 0)
     mask = np.expand_dims(mask, 0)
@@ -166,10 +113,6 @@ def generate_counterfactual(image_fp, mask_fp, output_fp, checkpoint_dir, model_
         print(f'IMAGE WROTE TO {output_fp}\n\n\n')
     tf.reset_default_graph()
 
-
-
-
-
 def generate_counterfactuals(data_dir, checkpoint_dir, model_id=None):
     dir_creator(checkpoint_dir.split('/')[0]) # create models directory if it doesn't already exist
     try:
@@ -194,9 +137,3 @@ def generate_counterfactuals(data_dir, checkpoint_dir, model_id=None):
                 # os.chdir('../../../../')
                 output_fp = f'{img_dir}/counterfactuals/cf_{ann_id}.png'
                 generate_counterfactual(input_fp, mask_fp, output_fp, checkpoint_dir)
-
-# def generate_counterfactual(image_fp, mask_fp, output_fp, checkpoint_dir):
-
-
-# if __name__ == "__main__":
-#     generate_counterfactuals(data_dir='data/raw_images', temp_dir='../data/temp/imgs', out_dir='../data/out', val_fp='../data/raw/annotations/instances_val2014.json')

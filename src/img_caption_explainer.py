@@ -14,10 +14,9 @@ import skimage.io as io
 from download import *
 from caption import *
 from helper import *
-print(os.getcwd())
 sys.path.insert(0, 'src/data/cocoapi/PythonAPI')
 from pycocotools.coco import COCO
-# from pycocotools import mask as maskUtils
+
 class ImageCaptionExplainer(object):
     def __init__(self, img_dir, out_dir, model_fp, wordmap_fp, beam_size, coco_fp, caption_model_id=None, wordmap_id=None):
         self.img_dir = img_dir
@@ -31,8 +30,6 @@ class ImageCaptionExplainer(object):
         self.coco = COCO(coco_fp)
         self.raw_imgs = self._get_raw_imgs()
         self.img_ids = [int(i.split('/')[-2].split('_')[-1]) for i in self.raw_imgs]
-#         self.counterfactuals = self._get_counterfactual_imgs()
-
         self.encoder, self.decoder = self._load_model()
 
         with open(self.wordmap_fp, 'r') as j:
@@ -42,42 +39,28 @@ class ImageCaptionExplainer(object):
 
         self.beam_size = beam_size
         self.alphas, self.seqs = self._get_alphas_seqs()
-#         self.seqs = {}
         self.ids = self._get_img_ann_ids()
-
-
-#     # Visualize caption and attention of best sequence
-# #     visualize_att(img_fp, seq, alphas, rev_word_map, fname, smooth)
-#     if visualize == True: visualize_att(img_fp, seq, alphas, rev_word_map, smooth)
-#     return ' '.join(words[1:-1])
 
     def __repr__(self):
         return f'ImageCaptionExplainer(img_dir=\'{self.img_dir}\', out_dir=\'{self.out_dir}\')'
 
     def _get_img_ann_ids(self):
         ids = {}
-#         ann_ids = []
         for idx, img in enumerate(self.img_ids):
             ids[img] = []
             load_fp = f'{self.img_dir}/{img}/counterfactuals'
             # get raw alphas, seq
-            # get_viz(wordmap_fp, in_fp, beam_size, out_fp, smooth, visualize=False)
             for i, ann in enumerate(os.listdir(load_fp)):
                 # get counterfactual captions
                 if 'raw' in ann or 'auto' in ann: continue
                 ann_id = int(ann.split('_')[-1].strip('.png'))
-#                 ann_ids.append(ann_id)
                 ann_fp = load_fp + ann
                 ids[img].append(ann_id)
             ids[img] = list(set(ids[img]))
-#                 self.alphas[ann_id], self.seqs[ann_id] = caption_image_beam_search(self.encoder, self.decoder, ann, self.word_map, self.beam_size)
-#         self.ann_ids = ann_ids
-#         ids
         return ids
 
 
     def _get_alphas_seqs(self):
-#         ann_ids = []
         #  Encode, decode with attention and beam search
         seqs = {}
         alphas = {}
@@ -91,18 +74,15 @@ class ImageCaptionExplainer(object):
             except FileNotFoundError:
                 img_fp = load_fp + f'raw_{img}.png'
                 seqs[img], alphas[img] = caption_image_beam_search(self.encoder, self.decoder, img_fp, self.word_map, self.beam_size)
-            # get_viz(wordmap_fp, in_fp, beam_size, out_fp, smooth, visualize=False)
             for i, ann in enumerate(os.listdir(f'{self.img_dir}/{img}/counterfactuals')):
                 # get counterfactual captions
                 if 'raw' in ann or 'maps' in ann or 'auto' in ann: continue
                 ann_id = int(ann.split('_')[-1].strip('.png'))
                 ann_fp = f'{self.img_dir}/{img}/counterfactuals/{ann}'
                 seqs[ann_id], alphas[ann_id] = caption_image_beam_search(self.encoder, self.decoder, ann_fp, self.word_map, self.beam_size)
-#         self.ann_ids = ann_ids
         return alphas, seqs
 
     def word_alpha_tuple(self, img_id):
-#         word_alpha = {}
         words = [self.rev_word_map[ind] for ind in self.seqs[img_id][1:-1]]
         alphas = self.alphas[img_id][1:-1]
         print(f'word, alpha length: {(len(words), len(alphas))}')
@@ -110,11 +90,8 @@ class ImageCaptionExplainer(object):
         return tuple(zip(words, alphas))
 
     def _get_caption(self, img_id):
-#         print(img_fp)
-#         img_id = int(img.split('/')[-2])
         words = [self.rev_word_map[ind] for ind in self.seqs[img_id]]
         caption = ' '.join(words[1:-1])
-#         self.seq = ' '.join(words[1:-1])
         return caption
 
     def _load_model(self):
@@ -136,7 +113,6 @@ class ImageCaptionExplainer(object):
 
     def _get_raw_imgs(self):
         raw_imgs = []
-#         caption_dict = {}
         for img_folder in (os.listdir(self.img_dir)):
             load_fp = f'{self.img_dir}/{img_folder}'
             for file in (os.listdir(f'{self.img_dir}/{img_folder}')):
@@ -150,12 +126,10 @@ class ImageCaptionExplainer(object):
         load_fp = f'{self.img_dir}/{img_id}/counterfactuals'
         # get raw img captions
         img_caption_dict[img_id] =  self._get_caption(img_id)
-        # get_viz(wordmap_fp, in_fp, beam_size, out_fp, smooth, visualize=False)
         for i, ann in enumerate(os.listdir(load_fp)):
             # get counterfactual captions
             if 'raw' in ann or 'auto' in ann: continue
             ann_id = int(ann.split('_')[-1].strip('.png'))
-#                 out_fp+=f'maps_{ann_id}.png'
             ann_fp = load_fp + ann
             words = self._get_caption(ann_id)
             ann_caption_dict[(img_id, ann_id)] = [words]
@@ -173,12 +147,10 @@ class ImageCaptionExplainer(object):
 
     def get_bert_similarities(self, img_id=None):
         raw_caption_dict, ann_caption_dict = self._get_captions(img_id)
-#         ann_caption_dict = self._get_captions(self.out_dir, self.out_dir)
 
         ann_df = pd.DataFrame(ann_caption_dict).transpose().reset_index().rename(columns={0:'ann_caption'})
         caption_df = pd.Series(raw_caption_dict).to_frame().rename(columns={0:'raw_caption'}).merge(ann_df, left_index=True, right_on='level_0')
         caption_df = caption_df.rename(columns={'level_0':'img_id', 'level_1':'ann_id'})
-#         print(caption_df)
         caption_df.loc[(caption_df['raw_caption'] == caption_df['ann_caption']), 'dist_from_raw'] = 0
         if caption_df['dist_from_raw'].isnull().sum() > 0:
             caption_df.loc[list(caption_df['dist_from_raw'].isnull().index), 'dist_from_raw'] = \
@@ -189,11 +161,16 @@ class ImageCaptionExplainer(object):
 
 
     def _get_mapping(self, x, low_val, high_val):
+        # deprecated color mapping function
         if (high_val - low_val)== 0: return 0, 0, 0
         green_val = (x - low_val) / (high_val - low_val)
         red_val = 1 - green_val
-    #     red_val = ((x - high_val) / (high_val - low_val)) + 1
         return red_val, green_val, 0
+
+    def plot_image(self, img_id):
+        img = self.coco.loadImgs([img_id])[0]
+        I = io.imread(img['coco_url'])
+        plt.imshow(I); plt.axis('off')
 
     def explain_image(self, img_id=None, methods=['bert']):
         assert img_id is not None, 'running explain_image without img_id not supported yet, please supply an img_id'
@@ -209,28 +186,17 @@ class ImageCaptionExplainer(object):
         for method in methods:
             if method == 'bert': img_caption_df = self.get_bert_similarities(img_id) # in the future additional methods will be explored, like 'alphas'
 
-            img = self.coco.loadImgs([img_id])[0]
-            I = io.imread(img['coco_url'])
-            plt.imshow(I); plt.axis('off')
+            self.plot_image(img_id)
 
             ax = plt.gca()
             ax.set_autoscale_on(False)
 
             polygons = []
             vals = []
-            # x_y = []
             anns = sorted(self.ids[img_id])
             ann_lst = self.coco.loadAnns(anns)
-            # print(f'num anns: {(ann_lst[1]["bbox"])}')
             x_y = {}
             for ann in ann_lst:
-            #     c = (np.random.random((1, 3))*0.6+0.4).tolist()[0]
-                # print(ann['id'])
-                # try:
-                #     print(ann['segmentation'][0])
-                # except KeyError:
-                #     print(img_id)
-                #     print(ann['segmentation'])
                 if type(ann['segmentation']) ==  list:
                     # poly_lst = []
                     for seg in ann['segmentation']:
@@ -265,22 +231,15 @@ class ImageCaptionExplainer(object):
             norm = matplotlib.colors.Normalize(vmin=min_val, vmax=max_val)
             cmap = 'RdYlGn'
             scalar_map = cm.ScalarMappable(norm=norm, cmap=cmap)
-
-            # print(f'vals: {vals}')
             color = [scalar_map.to_rgba(i) for i in vals]
 #             color = [self._get_mapping(i, min_val, max_val) for i in vals]
             # print(x_y)
             for i, c in enumerate(color):
-                # print(f'color: {c}')
                 centerx, centery = x_y[i]
                 text = ax.text(centerx, centery, str(round(vals[i], 4)), size=8, color=c)
                 outline='black'
-#                 if c == (0, 0, 0, 1): # color is black, set text outline to white
-#                     outline = 'white'
-#                 else:
-#                     outline = 'black'
                 text.set_path_effects([PathEffects.withStroke(linewidth=.6,foreground=outline)])
-            p = PatchCollection(polygons, facecolor=color, linewidths=0, alpha=0.3)
+            p = PatchCollection(polygons, facecolor=color, linewidths=0, alpha=0.2)
             ax.add_collection(p)
             p = PatchCollection(polygons, facecolor='none', edgecolors=color, linewidths=1.7)
             ax.add_collection(p);
@@ -289,7 +248,6 @@ class ImageCaptionExplainer(object):
             out_fp = f'{self.out_dir}/{img_id}'
             dir_creator(out_fp)
             out_fp += f'/{method}_object_importance_{img_id}.png'
-            # print(f'current directory: {os.getcwd()}')
             plt.savefig(out_fp, dpi=900);
             plt.close();
             print(f'Wrote to {out_fp}')
